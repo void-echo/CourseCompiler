@@ -25,15 +25,24 @@ public class CodeGenerator extends Visitor {
         return ClassUtil.getFieldValue(obj, attrName);
     }
 
-    public static void generate_array_item_address(ASTNode node) {
+    public void generate_array_item_address(ASTNode node) {
         if (node instanceof Var_array_item_Node var_array_item_node) {
             if (var_array_item_node.symbol instanceof Var_Symbol var_symbol) {
                 var arr_offset = var_symbol.offset;
-                int i = Integer.parseInt(var_array_item_node.index.value);
-                var arr_item_offset = (i - 1) * 8;
-                System.out.println("    mov $" + arr_item_offset + ", %rax");
-                System.out.println("    push %rax");
-                System.out.println("    lea " + arr_offset + "(%rbp), %rax");
+//                System.out.println("************************************" + var_array_item_node.index.token.type);
+                if (var_array_item_node.index.token.type.equals("INT_CONST")) {
+                    int i = Integer.parseInt(var_array_item_node.index.value);
+                    var arr_item_offset = (i - 1) * 8;
+                    System.out.println("    mov $" + arr_item_offset + ", %rax");
+                    System.out.println("    push %rax");
+                    System.out.println("    lea " + arr_offset + "(%rbp), %rax");
+                } else {
+                    var_array_item_node.index.accept(this);
+                    System.out.println("    sub $1, %rax");
+                    System.out.println("    imul $8, %rax");
+                    System.out.println("    push %rax");
+                    System.out.println("    lea " + var_symbol.offset + "(%rbp), %rax");
+                }
                 System.out.println("    pop %rdi");
                 System.out.println("    add %rdi, %rax");
             }
@@ -54,6 +63,7 @@ public class CodeGenerator extends Visitor {
                 System.out.println("    not %rax");
             } else {
                 UnitedLog.err("CodeGenerator visit_UnaryOp_Node: unknown operator: " + tk.type + ". Do nothing.");
+                System.exit(1);
             }
         } else {
             throw new RuntimeException("CodeGenerator visit_UnaryOp_Node: node is not UnaryOp_Node. Expected UnaryOp_Node, got " + node.getClass().getName());
@@ -123,8 +133,9 @@ public class CodeGenerator extends Visitor {
                 }
                 case "&&" -> System.out.println("    and %rdi, %rax");
                 case "||" -> System.out.println("    or %rdi, %rax");
-                default ->
-                        UnitedLog.warn("CodeGenerator visit_BinaryOp_Node: unknown operator: " + tk_tp + ". Do nothing.");
+                default -> {
+//                    UnitedLog.warn("CodeGenerator visit_BinaryOp_Node: unknown operator: " + tk_tp + ". Do nothing.");
+                }
             }
         } else {
             throw new RuntimeException("CodeGenerator visit_BinaryOp_Node: node is not BinaryOp_Node. Expected BinaryOp_Node, got " + node.getClass().getName());
@@ -134,15 +145,12 @@ public class CodeGenerator extends Visitor {
     @Override
     void visit_Assign_Node(ASTNode node) {
         if (node instanceof Assign_Node assign_node) {
-            var left_token = assign_node.left.token;
-            assert left_token != null;
-            if (left_token.type.equals("ID")) {
-                var left_symbol = assign_node.left.symbol;
-                var var_offset = left_symbol.offset;
+            if (assign_node.left.token.type.equals("ID")) {
+                var var_offset = assign_node.left.symbol.offset;
                 System.out.println("    lea " + var_offset + "(%rbp), %rax");
                 System.out.println("    push %rax");
                 if (assign_node.left instanceof Var_array_item_Node var_array_item_node) {
-                    if (var_array_item_node.array != null && !"".equals(var_array_item_node.array)) {
+                    if (var_array_item_node.array != null) {
                         generate_array_item_address(var_array_item_node);
                         System.out.println("    push %rax");
                     }
@@ -160,18 +168,19 @@ public class CodeGenerator extends Visitor {
     void visit_If_Node(ASTNode node) {
         if (node instanceof If_Node if_node) {
             _count++;
+            var localLabel = _count;
             if_node.condition.accept(this);
             System.out.println("    cmp $0, %rax");
-            System.out.println("    je  .L.else." + _count);
+            System.out.println("    je  .L.else." + localLabel);
             if (if_node.then_stat != null) {
                 if_node.then_stat.accept(this);
             }
-            System.out.println("    jmp .L.end." + _count);
-            System.out.println(".L.else." + _count + ":");
+            System.out.println("    jmp .L.end." + localLabel);
+            System.out.println(".L.else." + localLabel + ":");
             if (if_node.else_stat != null) {
                 if_node.else_stat.accept(this);
             }
-            System.out.println(".L.end." + _count + ":");
+            System.out.println(".L.end." + localLabel + ":");
         } else {
             throw new RuntimeException("CodeGenerator visit_If_Node: node is not If_Node");
         }
@@ -181,15 +190,16 @@ public class CodeGenerator extends Visitor {
     void visit_While_Node(ASTNode node) {
         if (node instanceof While_Node while_node) {
             _count++;
-            System.out.println(".L.condition." + _count + ":");
+            var localLabel = _count;
+            System.out.println(".L.condition." + localLabel + ":");
             while_node.condition.accept(this);
             System.out.println("    cmp $0, %rax");
-            System.out.println("    je  .L.end." + _count);
+            System.out.println("    je  .L.end." + localLabel);
             if (while_node.statement != null) {
                 while_node.statement.accept(this);
             }
-            System.out.println("    jmp .L.condition." + _count);
-            System.out.println(".L.end." + _count + ":");
+            System.out.println("    jmp .L.condition." + localLabel);
+            System.out.println(".L.end." + localLabel + ":");
         } else {
             throw new RuntimeException("CodeGenerator visit_While_Node: node is not While_Node");
         }
@@ -239,8 +249,7 @@ public class CodeGenerator extends Visitor {
                 if (varDecl_node.varNode instanceof Var_Node var_node) {
                     if (var_node.array != null) {
                         var arr_offset = var_node.symbol.offset;
-                        var arr_size_str = var_node.array.size;
-                        var arr_size = Integer.parseInt(arr_size_str);
+                        var arr_size = Integer.parseInt(var_node.array.size);
                         int __i__ = 0;
                         while (__i__ < arr_size) {
                             int arr_item_offset = __i__ * 8;
@@ -262,7 +271,7 @@ public class CodeGenerator extends Visitor {
 
     @Override
     void visit_FormalParam_Node(ASTNode node) {
-        UnitedLog.warn("CodeGenerator visit_FormalParam_Node: not implemented");
+//        UnitedLog.warn("CodeGenerator visit_FormalParam_Node: not implemented");
     }
 
     @Override
@@ -270,7 +279,7 @@ public class CodeGenerator extends Visitor {
         SemanticAnalyzer.offset_sum = 0;
         if (node instanceof FunctionDef_Node funcDef_node) {
             System.out.println("    .text");
-            System.out.println("    .globl " + funcDef_node.funcName);
+            System.out.println("    .global " + funcDef_node.funcName);
             System.out.println(funcDef_node.funcName + ":");
             // 开场白
             System.out.println("    push %rbp");

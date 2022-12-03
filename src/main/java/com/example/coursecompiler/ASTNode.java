@@ -7,6 +7,8 @@ public abstract class ASTNode {
     String value;
     Token token;
     Symbol symbol;
+
+    String __type;
     abstract void accept(Visitor visitor);
 }
 
@@ -18,6 +20,7 @@ class UnaryOp_Node extends ASTNode {
         this.op = op;
         this.token = op;
         this.right = right;
+        this.__type = "UnaryOp_Node";
     }
 
     @Override
@@ -34,6 +37,7 @@ class If_Node extends ASTNode {
         this.condition = condition;
         this.then_stat = then_stat;
         this.else_stat = else_stat;
+        this.__type = "If_Node";
     }
 
     @Override
@@ -48,6 +52,7 @@ class While_Node extends ASTNode {
     public While_Node(ASTNode condition, ASTNode statement) {
         this.condition = condition;
         this.statement = statement;
+        this.__type = "While_Node";
     }
 
     @Override
@@ -64,6 +69,7 @@ class Return_Node extends ASTNode {
         this.token = token;
         this.right = right;
         this.funcName = funcName;
+        this.__type = "Return_Node";
     }
 
     @Override
@@ -81,6 +87,7 @@ class Block_Node extends ASTNode {
         this.lt = lt;
         this.rt = rt;
         this.state_nodes = state_nodes;
+        this.__type = "Block_Node";
     }
 
     @Override
@@ -97,6 +104,7 @@ class BinaryOp_Node extends ASTNode {
         this.left = left;
         this.token = this.op = op;
         this.right = right;
+        this.__type = "BinaryOp_Node";
     }
 
     @Override
@@ -114,6 +122,7 @@ class Assign_Node extends ASTNode {
         this.left = left;
         this.token = this.op = op;
         this.right = right;
+        this.__type = "Assign_Node";
     }
 
     @Override
@@ -130,6 +139,7 @@ class FunctionCal_Node extends ASTNode {
         this.funcName = funcName;
         this.actual_param_nodes = actual_param_nodes;
         this.token = token;
+        this.__type = "FunctionCal_Node";
     }
 
     @Override
@@ -143,6 +153,7 @@ class Num_Node extends ASTNode {
     public Num_Node(Token token) {
         this.token = token;
         this.value = token.value;
+        this.__type = "Num_Node";
     }
 
     @Override
@@ -188,12 +199,14 @@ class Var_Node extends ASTNode {
     public Var_Node(Token token) {
         this.token = token;
         this.name = token.value;
+        this.__type = "Var_Node";
     }
 
     public Var_Node(Token token, _array array) {
         this.token = token;
         this.name = token.value;
         this.array = array; // stores real array instead of 'Yes' or 'No'
+        this.__type = "Var_Node";
     }
 }
 
@@ -205,6 +218,7 @@ class Var_array_item_Node extends ASTNode {
         this.token = token;
         this.index = index;
         this.array = "Yes";
+        this.__type = "Var_array_item_Node";
     }
 
     @Override
@@ -219,6 +233,7 @@ class BasicType_Node extends ASTNode {
     public BasicType_Node(Token token) {
         this.token = token;
         this.value = token.value;
+        this.__type = "BasicType_Node";
     }
 
     @Override
@@ -233,6 +248,7 @@ class VarDecl_Node extends ASTNode {
     public VarDecl_Node(ASTNode basicTypeNode, ASTNode varNode) {
         this.basicTypeNode = basicTypeNode;
         this.varNode = varNode;
+        this.__type = "VarDecl_Node";
     }
 
     @Override
@@ -249,6 +265,7 @@ class FormalParam_Node extends ASTNode {
     public FormalParam_Node(ASTNode basicTypeNode, ASTNode paramNode) {
         this.basicTypeNode = basicTypeNode;
         this.paramNode = paramNode;
+        this.__type = "FormalParam_Node";
     }
 
     @Override
@@ -270,6 +287,7 @@ class FunctionDef_Node extends ASTNode {
         this.formal_param_nodes = formal_param_nodes;
         this.blockNode = blockNode;
         offset = 0;
+        this.__type = "FunctionDef_Node";
     }
 
 

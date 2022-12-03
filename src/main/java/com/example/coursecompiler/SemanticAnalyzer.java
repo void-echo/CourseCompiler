@@ -67,11 +67,7 @@ public class SemanticAnalyzer extends Visitor {
                 if_node.then_stat.accept(this);
                 if (if_node.else_stat != null) {
                     if_node.else_stat.accept(this);
-                } else {
-                    UnitedLog.warn("SemanticAnalyzer visit_If_Node: else_stat is null");
                 }
-            } else {
-                UnitedLog.warn("SemanticAnalyzer visit_If_Node: then_stat is null");
             }
         } else {
             throw new RuntimeException("SemanticAnalyzer visit_If_Node: node is not If_Node");
@@ -84,8 +80,6 @@ public class SemanticAnalyzer extends Visitor {
             while_node.condition.accept(this);
             if (while_node.statement != null) {
                 while_node.statement.accept(this);
-            } else {
-                UnitedLog.warn("SemanticAnalyzer visit_While_Node: statement is null");
             }
         } else {
             throw new RuntimeException("SemanticAnalyzer visit_While_Node: node is not While_Node");
@@ -97,13 +91,12 @@ public class SemanticAnalyzer extends Visitor {
         var block_name = currentScope.scope_name + "_block" + currentScope.scope_level + 1;
         if (DEBUG)
             UnitedLog.print("ENTER scope: block_name = " + block_name);
-        var pre = currentScope;
-        currentScope = new ScopedSymbolTable(block_name, currentScope.scope_level + 1, pre);
+        currentScope = new ScopedSymbolTable(block_name, currentScope.scope_level + 1, currentScope);
         if (node instanceof Block_Node block_node) {
             for (var statement : block_node.state_nodes) {
                 statement.accept(this);
             }
-            currentScope = pre;
+            currentScope = currentScope.enclosing_scope;
             if (DEBUG)
                 UnitedLog.print("LEAVE scope: block_name = " + block_name);
         } else {
@@ -124,6 +117,7 @@ public class SemanticAnalyzer extends Visitor {
 
     @Override
     void visit_Var_Node(ASTNode node) {
+//        currentScope.show();
         if (node instanceof Var_Node var_node) {
             var var_name = var_node.name;
             var var_symbol = currentScope.lookup(var_name);
@@ -135,6 +129,24 @@ public class SemanticAnalyzer extends Visitor {
             throw new RuntimeException("SemanticAnalyzer visit_Var_Node: node is not Var_Node");
         }
     }
+
+    @Override
+    void visit_Var_array_item_Node(ASTNode node) {
+        if (node instanceof Var_array_item_Node var_array_item_node) {
+            var arr_name = var_array_item_node.token.value;
+            var arr_symbol = currentScope.lookup(arr_name);
+            arr_symbol.ifPresentOrElse(sym -> {
+                var_array_item_node.symbol = sym;
+                var_array_item_node.index.accept(this);
+            }, () -> {
+                UnitedLog.err("SemanticAnalyzer visit_Var_array_item_Node: " + arr_name + " is not defined");
+                System.exit(1);
+            });
+        } else {
+            throw new RuntimeException("SemanticAnalyzer visit_Var_array_item_Node: node is not Var_array_item_Node");
+        }
+    }
+
 
     @Override
     void visit_VarDecl_Node(ASTNode node) {
@@ -234,23 +246,10 @@ public class SemanticAnalyzer extends Visitor {
     @Override
     void visit_FunctionCall_Node(ASTNode node) {
         if (node instanceof FunctionCal_Node) {
-            UnitedLog.warn("SemanticAnalyzer visit_FunctionCall_Node: Doing nothing");
+//            UnitedLog.warn("SemanticAnalyzer visit_FunctionCall_Node: Doing nothing");
         } else {
             throw new RuntimeException("SemanticAnalyzer visit_FunctionCall_Node: node is not FunctionCall_Node");
         }
     }
 
-    @Override
-    void visit_Var_array_item_Node(ASTNode node) {
-        if (node instanceof Var_array_item_Node var_array_item_node) {
-            var arr_name = var_array_item_node.token.value;
-            var arr_symbol = currentScope.lookup(arr_name);
-            arr_symbol.ifPresentOrElse(sym -> var_array_item_node.symbol = sym, () -> {
-                UnitedLog.err("SemanticAnalyzer visit_Var_array_item_Node: " + arr_name + " is not defined");
-                System.exit(1);
-            });
-        } else {
-            throw new RuntimeException("SemanticAnalyzer visit_Var_array_item_Node: node is not Var_array_item_Node");
-        }
-    }
 }

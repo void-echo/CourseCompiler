@@ -148,7 +148,7 @@ public class Parser {
     }
 
     // logic := equality ("&&" equality | "||" equality)*
-    public ASTNode logic() {
+    public ASTNode logic() {    // 对
         var node = equality();
         while (true) {
             var tk = current_token;
@@ -274,14 +274,12 @@ public class Parser {
                             while (!current_token.type.equals("}")) {
                                 if (current_token.type.equals("INT_CONST")) {
                                     arr_items.add(Integer.parseInt(current_token.value));
-                                    System.out.println("Adding " + current_token.value);
                                     eat("INT_CONST");
                                 }
                                 if (current_token.type.equals(",")) {
                                     eat(",");
                                     if (current_token.type.equals("INT_CONST")) {
                                         arr_items.add(Integer.parseInt(current_token.value));
-                                        System.out.println("Adding " + current_token.value);
                                         eat("INT_CONST");
                                     } else {
                                         throw new RuntimeException("Expected integer const value but got " + current_token.type);
@@ -296,7 +294,6 @@ public class Parser {
                                 throw new RuntimeException("Array size is not equal to the number of elements");
                             }
                             _array arr = new _array("" + arr_size, arr_items);
-                            System.out.println(arr);
                             Var_Node var_n = new Var_Node(tk, arr);
                             vars.add(new VarDecl_Node(type_n, var_n));
                         } else {

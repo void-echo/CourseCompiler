@@ -43,4 +43,11 @@ public class ScopedSymbolTable {
         UnitedLog.err("Symbol not found: %s".formatted(name));
         return Optional.empty();
     }
+
+    public void show() {
+        System.out.printf("Scope name: %s%n", scope_name);
+        for (Symbol symbol : symbols.values()) {
+            System.out.println(symbol);
+        }
+    }
 }

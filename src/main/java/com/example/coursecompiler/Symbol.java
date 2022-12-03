@@ -15,6 +15,15 @@ public abstract class Symbol {
 
     public String name, type;
     public int offset;
+
+    @Override
+    public String toString() {
+        return "Symbol{" +
+                "name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", offset=" + offset +
+                '}';
+    }
 }
 
 class Func_Symbol extends Symbol {

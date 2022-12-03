@@ -160,7 +160,7 @@ public class Lexer {
                     System.exit(1);
                 }
             }
-            UnitedLog.print("Lexer finished.");
+//            UnitedLog.print("Lexer finished.");
         }
         tokens = li;
         return li;
