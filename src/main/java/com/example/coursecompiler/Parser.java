@@ -57,23 +57,23 @@ public class Parser {
                 }
 
                 eat(")");
-                return new FunctionCal_Node(func_name, args, tk);
+                return new functionCalNode(func_name, args, tk);
             }
             // arr_item
             if (current_token.type.equals("[")) {
                 eat("[");
                 var index = expr();
                 eat("]");
-                return new Var_array_item_Node(tk, index);
+                return new varArrayItemNode(tk, index);
             }
             // var
-            return new Var_Node(tk);
+            return new varNode(tk);
         }
 
         // num or false or true
         if (tk.type.equals("INT_CONST") || tk.type.equals("false") || tk.type.equals("true")) {
             eat(tk.type);
-            return new Num_Node(tk);
+            return new numNode(tk);
         } else {
             throw new RuntimeException("Expected primary but got " + tk.type);
         }
@@ -85,7 +85,7 @@ public class Parser {
         if (tk.type.equals("+") || tk.type.equals("-") || tk.type.equals("!")) {
             eat(tk.type);
             var node = unary();
-            return new UnaryOp_Node(tk, node);
+            return new unaryOpNode(tk, node);
         } else {
             return primary();
         }
@@ -98,7 +98,7 @@ public class Parser {
             var tk = current_token;
             if (tk.type.equals("*") || tk.type.equals("/")) {
                 eat(tk.type);
-                node = new BinaryOp_Node(node, tk, unary());
+                node = new binaryOpNode(node, tk, unary());
                 continue;
             }
             return node;
@@ -112,7 +112,7 @@ public class Parser {
             var tk = current_token;
             if (tk.type.equals("+") || tk.type.equals("-")) {
                 eat(tk.type);
-                node = new BinaryOp_Node(node, tk, mul_div());
+                node = new binaryOpNode(node, tk, mul_div());
                 continue;
             }
             return node;
@@ -126,7 +126,7 @@ public class Parser {
             var tk = current_token;
             if (tk.type.equals("<") || tk.type.equals("<=") || tk.type.equals(">") || tk.type.equals(">=")) {
                 eat(tk.type);
-                node = new BinaryOp_Node(node, tk, add_sub());
+                node = new binaryOpNode(node, tk, add_sub());
                 continue;
             }
             return node;
@@ -140,7 +140,7 @@ public class Parser {
             var tk = current_token;
             if (tk.type.equals("==") || tk.type.equals("!=")) {
                 eat(tk.type);
-                node = new BinaryOp_Node(node, tk, relational());
+                node = new binaryOpNode(node, tk, relational());
                 continue;
             }
             return node;
@@ -154,7 +154,7 @@ public class Parser {
             var tk = current_token;
             if (tk.type.equals("&&") || tk.type.equals("||")) {
                 eat(tk.type);
-                node = new BinaryOp_Node(node, tk, equality());
+                node = new binaryOpNode(node, tk, equality());
                 continue;
             }
             return node;
@@ -167,7 +167,7 @@ public class Parser {
         var tk = current_token;
         if (tk.type.equals("=")) {
             eat("=");
-            node = new Assign_Node(node, tk, expr());
+            node = new assignNode(node, tk, expr());
         }
         return node;
     }
@@ -198,7 +198,7 @@ public class Parser {
         switch (tk.type) {
             case "return":
                 eat("return");
-                return new Return_Node(tk, expr_stat(), current_func_name);
+                return new returnNode(tk, expr_stat(), current_func_name);
             case "{":
                 return block();
             case "if": {
@@ -215,7 +215,7 @@ public class Parser {
                         else_node = statement();
                     }
                 }
-                return new If_Node(cond, then_stat, else_node);
+                return new ifNode(cond, then_stat, else_node);
             }
             case "while": {
                 ASTNode cond = null, stat = null;
@@ -226,7 +226,7 @@ public class Parser {
                     eat(")");
                     stat = statement();
                 }
-                return new While_Node(cond, stat);
+                return new whileNode(cond, stat);
             }
             default:
                 return expr_stat();
@@ -234,11 +234,11 @@ public class Parser {
     }
 
     // type_specification := int | bool
-    public BasicType_Node type_spec() {
+    public typeNode type_spec() {
         var tk = current_token;
         if (tk.type.equals("int") || tk.type.equals("bool")) {
             eat(tk.type);
-            return new BasicType_Node(tk);
+            return new typeNode(tk);
         } else {
             throw new RuntimeException("Expected type_spec but got " + tk.type);
         }
@@ -247,9 +247,9 @@ public class Parser {
     // variable_declaration := type_specification identifier ("," ID)* ";"
     //                      | type_specification identifier "[" num "]" ("=" "{" (num)? ("," num)* "}")? ";"
 
-    public List<VarDecl_Node> var_decl() {
+    public List<varDeclNode> var_decl() {
         var type_n = type_spec();
-        List<VarDecl_Node> vars = new ArrayList<>();
+        List<varDeclNode> vars = new ArrayList<>();
         while (!current_token.type.equals(";")) {
             var tk = current_token;
             if (tk.type.equals("ID")) {
@@ -294,23 +294,23 @@ public class Parser {
                                 throw new RuntimeException("Array size is not equal to the number of elements");
                             }
                             _array arr = new _array("" + arr_size, arr_items);
-                            Var_Node var_n = new Var_Node(tk, arr);
-                            vars.add(new VarDecl_Node(type_n, var_n));
+                            varNode var_n = new varNode(tk, arr);
+                            vars.add(new varDeclNode(type_n, var_n));
                         } else {
                             throw new RuntimeException("Expected { but got " + current_token.type);
                         }
                     }
                 } else {
-                    Var_Node varNode = new Var_Node(tk);
-                    VarDecl_Node decl_node = new VarDecl_Node(type_n, varNode);
+                    varNode varNode = new varNode(tk);
+                    varDeclNode decl_node = new varDeclNode(type_n, varNode);
                     vars.add(decl_node);
                     if (current_token.type.equals(",")) {
                         eat(",");
                     }
                     while (!current_token.type.equals(";")) {
                         if (current_token.type.equals("ID")) {
-                            varNode = new Var_Node(current_token);
-                            decl_node = new VarDecl_Node(type_n, varNode);
+                            varNode = new varNode(current_token);
+                            decl_node = new varDeclNode(type_n, varNode);
                             eat("ID");
                             vars.add(decl_node);
                             if (current_token.type.equals(",")) {
@@ -351,7 +351,7 @@ public class Parser {
             var statements = compound_statement();
             var right_tk = current_token;
             eat("}");
-            return new Block_Node(left_tk, right_tk, statements);
+            return new blockNode(left_tk, right_tk, statements);
         } else {
             UnitedLog.warn("In block(), expected { but got " + current_token.type);
             return null;
@@ -359,16 +359,16 @@ public class Parser {
     }
 
     // formal_parameter := type_specification identifier
-    public FormalParam_Node formal_param() {
+    public formalParamNode formal_param() {
         var type_n = type_spec();
-        var param_node = new Var_Node(current_token);
+        var param_node = new varNode(current_token);
         eat("ID");
-        return new FormalParam_Node(type_n, param_node);
+        return new formalParamNode(type_n, param_node);
     }
 
     // formal_parameters := formal_parameter (, formal_parameter)*
-    public List<FormalParam_Node> formal_params() {
-        List<FormalParam_Node> params = new ArrayList<>();
+    public List<formalParamNode> formal_params() {
+        List<formalParamNode> params = new ArrayList<>();
         params.add(formal_param());
         while (!current_token.type.equals(")")) {
             if (current_token.type.equals(",")) {
@@ -383,11 +383,11 @@ public class Parser {
     }
 
     // function_definition := type_specification identifier "(" formal_parameters? ")" block
-    public FunctionDef_Node func_def() {
+    public functionDefNode func_def() {
         var type_n = type_spec();
         var func_name = current_token.value;
         eat("ID");
-        List<FormalParam_Node> params = new ArrayList<>();
+        List<formalParamNode> params = new ArrayList<>();
         if (current_token.type.equals("(")) {
             eat("(");
 
@@ -400,7 +400,7 @@ public class Parser {
         current_func_name = func_name;
         if (current_token.type.equals("{")) {
             var block_node = block();
-            return new FunctionDef_Node(type_n, func_name, params, block_node);
+            return new functionDefNode(type_n, func_name, params, block_node);
         } else {
             throw new RuntimeException("In Function Definition, expected { but got " + current_token.type);
         }
@@ -422,6 +422,11 @@ public class Parser {
                     a = 123;
                     
                     return c;
+                }
+                
+                void foo() {
+                    int a;
+                    a = 123;
                 }
                 """;
         var lexer = new Lexer(text);

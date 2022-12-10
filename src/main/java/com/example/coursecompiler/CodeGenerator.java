@@ -26,7 +26,7 @@ public class CodeGenerator extends Visitor {
     }
 
     public void generate_array_item_address(ASTNode node) {
-        if (node instanceof Var_array_item_Node var_array_item_node) {
+        if (node instanceof varArrayItemNode var_array_item_node) {
             if (var_array_item_node.symbol instanceof Var_Symbol var_symbol) {
                 var arr_offset = var_symbol.offset;
 //                System.out.println("************************************" + var_array_item_node.index.token.type);
@@ -52,8 +52,8 @@ public class CodeGenerator extends Visitor {
     }
 
     @Override
-    void visit_UnaryOp_Node(ASTNode node) {
-        if (node instanceof UnaryOp_Node unaryOp_node) {
+    void visitUnaryOpNode(ASTNode node) {
+        if (node instanceof unaryOpNode unaryOp_node) {
             var tk = unaryOp_node.op;
             if (tk.type.equals("-")) {
                 unaryOp_node.right.accept(this);
@@ -71,8 +71,8 @@ public class CodeGenerator extends Visitor {
     }
 
     @Override
-    void visit_Return_Node(ASTNode node) {
-        if (node instanceof Return_Node return_node) {
+    void visitReturnNode(ASTNode node) {
+        if (node instanceof returnNode return_node) {
             return_node.right.accept(this);
             var tk = return_node.token;
             if (tk.type.equals("return")) {
@@ -86,8 +86,8 @@ public class CodeGenerator extends Visitor {
     }
 
     @Override
-    void visit_BinaryOp_Node(ASTNode node) {
-        if (node instanceof BinaryOp_Node binaryOp_node) {
+    void visitBinaryOpNode(ASTNode node) {
+        if (node instanceof binaryOpNode binaryOp_node) {
             binaryOp_node.right.accept(this);
             System.out.println("    push %rax");
             binaryOp_node.left.accept(this);
@@ -143,15 +143,15 @@ public class CodeGenerator extends Visitor {
     }
 
     @Override
-    void visit_Assign_Node(ASTNode node) {
-        if (node instanceof Assign_Node assign_node) {
+    void visitAssignNode(ASTNode node) {
+        if (node instanceof assignNode assign_node) {
             if (assign_node.left.token.type.equals("ID")) {
                 var var_offset = assign_node.left.symbol.offset;
                 System.out.println("    lea " + var_offset + "(%rbp), %rax");
                 System.out.println("    push %rax");
-                if (assign_node.left instanceof Var_array_item_Node var_array_item_node) {
-                    if (var_array_item_node.array != null) {
-                        generate_array_item_address(var_array_item_node);
+                if (assign_node.left instanceof varArrayItemNode varArrayItem_node) {
+                    if (varArrayItem_node.array != null) {
+                        generate_array_item_address(varArrayItem_node);
                         System.out.println("    push %rax");
                     }
                 }
@@ -165,8 +165,8 @@ public class CodeGenerator extends Visitor {
     }
 
     @Override
-    void visit_If_Node(ASTNode node) {
-        if (node instanceof If_Node if_node) {
+    void visitIfNode(ASTNode node) {
+        if (node instanceof ifNode if_node) {
             _count++;
             var localLabel = _count;
             if_node.condition.accept(this);
@@ -187,8 +187,8 @@ public class CodeGenerator extends Visitor {
     }
 
     @Override
-    void visit_While_Node(ASTNode node) {
-        if (node instanceof While_Node while_node) {
+    void visitWhileNode(ASTNode node) {
+        if (node instanceof whileNode while_node) {
             _count++;
             var localLabel = _count;
             System.out.println(".L.condition." + localLabel + ":");
@@ -206,8 +206,8 @@ public class CodeGenerator extends Visitor {
     }
 
     @Override
-    void visit_Block_Node(ASTNode node) {
-        if (node instanceof Block_Node block_node) {
+    void visitBlockNode(ASTNode node) {
+        if (node instanceof blockNode block_node) {
             for (var stat : block_node.state_nodes) {
                 stat.accept(this);
             }
@@ -217,8 +217,8 @@ public class CodeGenerator extends Visitor {
     }
 
     @Override
-    void visit_Num_Node(ASTNode node) {
-        if (node instanceof Num_Node num_node) {
+    void visitNumNode(ASTNode node) {
+        if (node instanceof numNode num_node) {
             if (num_node.value.equals("true")) {
                 System.out.println("    mov $1, %rax"); // 1 is true
             } else if (num_node.value.equals("false")) {
@@ -232,8 +232,8 @@ public class CodeGenerator extends Visitor {
     }
 
     @Override
-    void visit_Var_Node(ASTNode node) {
-        if (node instanceof Var_Node var_node) {
+    void visitVarNode(ASTNode node) {
+        if (node instanceof varNode var_node) {
             var var_offset = var_node.symbol.offset;
             System.out.println("    lea " + var_offset + "(%rbp), %rax");
             System.out.println("    mov (%rax), %rax");
@@ -243,10 +243,10 @@ public class CodeGenerator extends Visitor {
     }
 
     @Override
-    void visit_VarDecl_Node(ASTNode node) {
-        if (node instanceof VarDecl_Node varDecl_node) {
+    void visitVarDeclNode(ASTNode node) {
+        if (node instanceof varDeclNode varDecl_node) {
             if (varDecl_node.varNode != null) {
-                if (varDecl_node.varNode instanceof Var_Node var_node) {
+                if (varDecl_node.varNode instanceof varNode var_node) {
                     if (var_node.array != null) {
                         var arr_offset = var_node.symbol.offset;
                         var arr_size = Integer.parseInt(var_node.array.size);
@@ -270,14 +270,14 @@ public class CodeGenerator extends Visitor {
     }
 
     @Override
-    void visit_FormalParam_Node(ASTNode node) {
+    void visitFormalParamNode(ASTNode node) {
 //        UnitedLog.warn("CodeGenerator visit_FormalParam_Node: not implemented");
     }
 
     @Override
-    void visit_FunctionDef_Node(ASTNode node) {
+    void visitFunctionDefNode(ASTNode node) {
         SemanticAnalyzer.offset_sum = 0;
-        if (node instanceof FunctionDef_Node funcDef_node) {
+        if (node instanceof functionDefNode funcDef_node) {
             System.out.println("    .text");
             System.out.println("    .global " + funcDef_node.funcName);
             System.out.println(funcDef_node.funcName + ":");
@@ -304,9 +304,9 @@ public class CodeGenerator extends Visitor {
     }
 
     @Override
-    void visit_FunctionCall_Node(ASTNode node) {
+    void visitFunctionCallNode(ASTNode node) {
         int num_args = 0;
-        if (node instanceof FunctionCal_Node funcCall_node) {
+        if (node instanceof functionCalNode funcCall_node) {
             for (var arg : funcCall_node.actual_param_nodes) {
                 // actual_param_nodes must not be null. This had been verified.
                 arg.accept(this);
@@ -324,10 +324,10 @@ public class CodeGenerator extends Visitor {
     }
 
     @Override
-    void visit_Var_array_item_Node(ASTNode node) {
-        if (node instanceof Var_array_item_Node var_array_item_node) {
-            if (var_array_item_node.array != null && !"".equals(var_array_item_node.array)) {
-                generate_array_item_address(var_array_item_node);
+    void visitVarArrayItemNode(ASTNode node) {
+        if (node instanceof varArrayItemNode varArrayItem_node) {
+            if (varArrayItem_node.array != null && !"".equals(varArrayItem_node.array)) {
+                generate_array_item_address(varArrayItem_node);
                 System.out.println("    mov (%rax), %rax");
             }
         } else {

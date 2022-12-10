@@ -8,157 +8,147 @@ public abstract class ASTNode {
     Token token;
     Symbol symbol;
 
-    String __type;
     abstract void accept(Visitor visitor);
 }
 
-class UnaryOp_Node extends ASTNode {
+class unaryOpNode extends ASTNode {
     Token op;
     ASTNode right;
 
-    public UnaryOp_Node(Token op, ASTNode right) {
+    public unaryOpNode(Token op, ASTNode right) {
         this.op = op;
         this.token = op;
         this.right = right;
-        this.__type = "UnaryOp_Node";
     }
 
     @Override
     void accept(Visitor visitor) {
-        visitor.visit_UnaryOp_Node(this);
+        visitor.visitUnaryOpNode(this);
     }
 }
 
 
-class If_Node extends ASTNode {
+class ifNode extends ASTNode {
     ASTNode condition, then_stat, else_stat;
 
-    public If_Node(ASTNode condition, ASTNode then_stat, ASTNode else_stat) {
+    public ifNode(ASTNode condition, ASTNode then_stat, ASTNode else_stat) {
         this.condition = condition;
         this.then_stat = then_stat;
         this.else_stat = else_stat;
-        this.__type = "If_Node";
     }
 
     @Override
     void accept(Visitor visitor) {
-        visitor.visit_If_Node(this);
+        visitor.visitIfNode(this);
     }
 }
 
-class While_Node extends ASTNode {
+class whileNode extends ASTNode {
     ASTNode condition, statement;
 
-    public While_Node(ASTNode condition, ASTNode statement) {
+    public whileNode(ASTNode condition, ASTNode statement) {
         this.condition = condition;
         this.statement = statement;
-        this.__type = "While_Node";
     }
 
     @Override
     void accept(Visitor visitor) {
-        visitor.visit_While_Node(this);
+        visitor.visitWhileNode(this);
     }
 }
 
-class Return_Node extends ASTNode {
+class returnNode extends ASTNode {
     ASTNode right;
     String funcName;
 
-    public Return_Node(Token token, ASTNode right, String funcName) {
+    public returnNode(Token token, ASTNode right, String funcName) {
         this.token = token;
         this.right = right;
         this.funcName = funcName;
-        this.__type = "Return_Node";
     }
 
     @Override
     void accept(Visitor visitor) {
-        visitor.visit_Return_Node(this);
+        visitor.visitReturnNode(this);
     }
 }
 
 
-class Block_Node extends ASTNode {
+class blockNode extends ASTNode {
     Token lt, rt;
     List<ASTNode> state_nodes;
 
-    public Block_Node(Token lt, Token rt, List<ASTNode> state_nodes) {
+    public blockNode(Token lt, Token rt, List<ASTNode> state_nodes) {
         this.lt = lt;
         this.rt = rt;
         this.state_nodes = state_nodes;
-        this.__type = "Block_Node";
     }
 
     @Override
     void accept(Visitor visitor) {
-        visitor.visit_Block_Node(this);
+        visitor.visitBlockNode(this);
     }
 }
 
-class BinaryOp_Node extends ASTNode {
+class binaryOpNode extends ASTNode {
     Token op;
     ASTNode left, right;
 
-    public BinaryOp_Node(ASTNode left, Token op, ASTNode right) {
+    public binaryOpNode(ASTNode left, Token op, ASTNode right) {
         this.left = left;
         this.token = this.op = op;
         this.right = right;
-        this.__type = "BinaryOp_Node";
-    }
+   }
 
     @Override
     void accept(Visitor visitor) {
-        visitor.visit_BinaryOp_Node(this);
+        visitor.visitBinaryOpNode(this);
     }
 }
 
 
-class Assign_Node extends ASTNode {
+class assignNode extends ASTNode {
     Token op;
     ASTNode left, right;
 
-    public Assign_Node(ASTNode left, Token op, ASTNode right) {
+    public assignNode(ASTNode left, Token op, ASTNode right) {
         this.left = left;
         this.token = this.op = op;
         this.right = right;
-        this.__type = "Assign_Node";
     }
 
     @Override
     void accept(Visitor visitor) {
-        visitor.visit_Assign_Node(this);
+        visitor.visitAssignNode(this);
     }
 }
 
-class FunctionCal_Node extends ASTNode {
+class functionCalNode extends ASTNode {
     String funcName;
     List<ASTNode> actual_param_nodes;
 
-    public FunctionCal_Node(String funcName, List<ASTNode> actual_param_nodes, Token token) {
+    public functionCalNode(String funcName, List<ASTNode> actual_param_nodes, Token token) {
         this.funcName = funcName;
         this.actual_param_nodes = actual_param_nodes;
         this.token = token;
-        this.__type = "FunctionCal_Node";
     }
 
     @Override
     void accept(Visitor visitor) {
-        visitor.visit_FunctionCall_Node(this);
+        visitor.visitFunctionCallNode(this);
     }
 }
 
-class Num_Node extends ASTNode {
+class numNode extends ASTNode {
 
-    public Num_Node(Token token) {
+    public numNode(Token token) {
         this.token = token;
         this.value = token.value;
-        this.__type = "Num_Node";
     }
 
     @Override
     void accept(Visitor visitor) {
-        visitor.visit_Num_Node(this);
+        visitor.visitNumNode(this);
     }
 }
 
@@ -186,54 +176,50 @@ class _array {
     }
 }
 
-class Var_Node extends ASTNode {
+class varNode extends ASTNode {
     String name;
     _array array;
 
 
     @Override
     void accept(Visitor visitor) {
-        visitor.visit_Var_Node(this);
+        visitor.visitVarNode(this);
     }
 
-    public Var_Node(Token token) {
+    public varNode(Token token) {
         this.token = token;
         this.name = token.value;
-        this.__type = "Var_Node";
     }
 
-    public Var_Node(Token token, _array array) {
+    public varNode(Token token, _array array) {
         this.token = token;
         this.name = token.value;
         this.array = array; // stores real array instead of 'Yes' or 'No'
-        this.__type = "Var_Node";
     }
 }
 
-class Var_array_item_Node extends ASTNode {
+class varArrayItemNode extends ASTNode {
     ASTNode index;
     String array;
 
-    public Var_array_item_Node(Token token, ASTNode index) {
+    public varArrayItemNode(Token token, ASTNode index) {
         this.token = token;
         this.index = index;
         this.array = "Yes";
-        this.__type = "Var_array_item_Node";
     }
 
     @Override
     void accept(Visitor visitor) {
-        visitor.visit_Var_array_item_Node(this);
+        visitor.visitVarArrayItemNode(this);
     }
 }
 
 
-class BasicType_Node extends ASTNode {
+class typeNode extends ASTNode {
 
-    public BasicType_Node(Token token) {
+    public typeNode(Token token) {
         this.token = token;
         this.value = token.value;
-        this.__type = "BasicType_Node";
     }
 
     @Override
@@ -242,57 +228,54 @@ class BasicType_Node extends ASTNode {
     }
 }
 
-class VarDecl_Node extends ASTNode {
+class varDeclNode extends ASTNode {
     ASTNode basicTypeNode, varNode;
 
-    public VarDecl_Node(ASTNode basicTypeNode, ASTNode varNode) {
+    public varDeclNode(ASTNode basicTypeNode, ASTNode varNode) {
         this.basicTypeNode = basicTypeNode;
         this.varNode = varNode;
-        this.__type = "VarDecl_Node";
     }
 
     @Override
     void accept(Visitor visitor) {
-        visitor.visit_VarDecl_Node(this);
+        visitor.visitVarDeclNode(this);
     }
 }
 
 
-class FormalParam_Node extends ASTNode {
+class formalParamNode extends ASTNode {
     ASTNode basicTypeNode, paramNode;
     Symbol paramSymbol;
 
-    public FormalParam_Node(ASTNode basicTypeNode, ASTNode paramNode) {
+    public formalParamNode(ASTNode basicTypeNode, ASTNode paramNode) {
         this.basicTypeNode = basicTypeNode;
         this.paramNode = paramNode;
-        this.__type = "FormalParam_Node";
     }
 
     @Override
     void accept(Visitor visitor) {
-        visitor.visit_FormalParam_Node(this);
+        visitor.visitFormalParamNode(this);
     }
 }
 
-class FunctionDef_Node extends ASTNode {
+class functionDefNode extends ASTNode {
     ASTNode basicTypeNode;
     String funcName;
-    List<FormalParam_Node> formal_param_nodes;
+    List<formalParamNode> formal_param_nodes;
     ASTNode blockNode;
     int offset;
 
-    public FunctionDef_Node(ASTNode basicTypeNode, String funcName, List<FormalParam_Node> formal_param_nodes, ASTNode blockNode) {
+    public functionDefNode(ASTNode basicTypeNode, String funcName, List<formalParamNode> formal_param_nodes, ASTNode blockNode) {
         this.basicTypeNode = basicTypeNode;
         this.funcName = funcName;
         this.formal_param_nodes = formal_param_nodes;
         this.blockNode = blockNode;
         offset = 0;
-        this.__type = "FunctionDef_Node";
     }
 
 
     @Override
     void accept(Visitor visitor) {
-        visitor.visit_FunctionDef_Node(this);
+        visitor.visitFunctionDefNode(this);
     }
 }
