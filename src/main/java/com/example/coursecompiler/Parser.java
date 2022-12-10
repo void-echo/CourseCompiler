@@ -418,15 +418,16 @@ public class Parser {
     public static void main(String[] args) {
         var text = """
                 int main(int ar) {
-                    int a;
+                    int a, b;
                     a = 123;
-                    
+                    b = foo(a);
                     return c;
                 }
                 
-                void foo() {
-                    int a;
-                    a = 123;
+                int foo(int d) {
+                    int e;
+                    e = 123;
+                    return e;
                 }
                 """;
         var lexer = new Lexer(text);

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Put it in the dir: target\classes
+# Put it in the dir: <project-dir>/target/classes
 assert() {
     expected="$1"
     input="$2"

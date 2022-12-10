@@ -5,7 +5,7 @@ import java.util.List;
 public class SemanticAnalyzer extends Visitor {
     ScopedSymbolTable currentScope;
     boolean DEBUG = false;
-    public static int offset_sum = -999;
+    public static int offset_sum = 0;
 
     public void semanticAnalysis(List<ASTNode> tree) {
         tree.forEach(node -> {

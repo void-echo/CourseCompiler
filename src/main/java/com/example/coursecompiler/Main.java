@@ -5,20 +5,16 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        StringBuilder article = new StringBuilder();
-        while (scanner.hasNextLine()) {
-            article.append(scanner.nextLine());
-        }
-
-        Lexer lexer = new Lexer(article.toString());
-        Parser parser = new Parser(lexer);
+        var scanner = new Scanner(System.in);
+        var article = new StringBuilder();
+        while (scanner.hasNextLine()) article.append(scanner.nextLine());
+        var lexer = new Lexer(article.toString());
+        var parser = new Parser(lexer);
         var ast = parser.parse();
-        SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
+        var semanticAnalyzer = new SemanticAnalyzer();
         semanticAnalyzer.semanticAnalysis(ast);
-        CodeGenerator codeGenerator = new CodeGenerator();
+        var codeGenerator = new CodeGenerator();
         codeGenerator.codegen(ast);
-
     }
 }
 

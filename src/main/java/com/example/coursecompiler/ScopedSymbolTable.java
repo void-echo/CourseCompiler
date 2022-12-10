@@ -31,15 +31,9 @@ public class ScopedSymbolTable {
 
     Optional<Symbol> lookup(String name, boolean current_scope_only) {
         Symbol symbol = symbols.get(name);
-        if (symbol != null) {
-            return Optional.of(symbol);
-        }
-        if (current_scope_only) {
-            return Optional.empty();
-        }
-        if (enclosing_scope != null) {
-            return enclosing_scope.lookup(name);
-        }
+        if (symbol != null) return Optional.of(symbol);
+        if (current_scope_only) return Optional.empty();
+        if (enclosing_scope != null) return enclosing_scope.lookup(name);
         UnitedLog.err("Symbol not found: %s".formatted(name));
         return Optional.empty();
     }
