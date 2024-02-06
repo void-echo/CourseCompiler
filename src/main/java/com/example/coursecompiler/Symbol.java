@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Symbol {
-    public Symbol(String name, String type) {
+    protected Symbol(String name, String type) {
         this.name = name;
         this.type = type;
     }
 
-    public Symbol(String name) {
+    protected Symbol(String name) {
         this(name, null);
     }
 
